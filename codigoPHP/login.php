@@ -1,10 +1,4 @@
 <?php
-/*
-require_once "../config/confLocation.php"; //Incluimos el archivo de configuración para poder acceder a la constante de la url del header Location
-if(isset($_REQUEST['cancelar'])){//Si pulsa el botón de cancelar
-    header('Location: '.URL.'/proyectoMtoDepartamentosTema4/codigoPHP/mtoDepartamentos.php');//Redirigimos al usuario a la página inicial
-}
-*/
     /**
         *@author: Cristina Núñez
         *@since: 17/11/2020
@@ -21,13 +15,6 @@ if(isset($_REQUEST['cancelar'])){//Si pulsa el botón de cancelar
     //Declaramos el array de errores y lo inicializamos a null
     $aErrores = ['CodUsuario' => null,
                  'Password' => null];
-    
-    $aErroresEntrada = ['CodUsuario' => null,
-                        'Password' => null];
-
-    //Declaramos el array del formulario y lo inicializamos a null
-    $aFormulario = ['CodUsuario' => null,
-                    'Password' => null];
 
     if(isset($_REQUEST['aceptar'])){ //Comprobamos que el usuario haya enviado el formulario
         $aErrores['CodUsuario'] = validacionFormularios::comprobarAlfaNumerico($_REQUEST['CodUsuario'], 15, 3, OBLIGATORIO);
@@ -43,17 +30,15 @@ if(isset($_REQUEST['cancelar'])){//Si pulsa el botón de cancelar
             $consultaUsuario->execute($parametrosUsuario);//Pasamos los parámetros a la consulta
             $registro = $consultaUsuario->fetchObject();
             
-            if($consultaUsuario->rowCount()>0){
+            if($consultaUsuario->rowCount()>0){//Si la consulta devuelve algun registro el codigo del usuario es correcto
                 $passwordEncriptado=hash("sha256", ($_REQUEST['CodUsuario'].$_REQUEST['Password']));
-                if($passwordEncriptado!=$registro->T01_Password){
-                    if($aErrores['Password']==null){
-                        $aErroresEntrada['Password'] = "Contraseña errónea";
-                    }
+                if($passwordEncriptado!=$registro->T01_Password){//Comprobamos que la contraseña sea correcta
+                    $aErrores['CodUsuario'] = "Error autentificacion";//Si la contraseña no es correcta guardamos un mensaje de error en el array de errores
+                    $aErrores['Password'] = "Error autentificacion";//Si la contraseña no es correcta guardamos un mensaje de error en el array de errores
                 }
-            }else{
-                if($aErrores['CodUsuario']==null){
-                    $aErroresEntrada['CodUsuario'] = "Código erróneo";
-                }
+            }else{//Si la consulta no devuelve ningun registro el codigo del usuario no es correcto
+                $aErrores['CodUsuario'] = "Error autentificacion";//Almacenamos un mensaje de error en el array de errores
+                $aErrores['Password'] = "Error autentificacion";//Almacenamos un mensaje de error en el array de errores
             }
             
         }catch(PDOException $excepcion){
@@ -70,7 +55,7 @@ if(isset($_REQUEST['cancelar'])){//Si pulsa el botón de cancelar
         foreach ($aErrores as $campo => $error){
             if ($error != null) { // Comprobamos que el campo no esté vacio
                 $entradaOK = false; // En caso de que haya algún error le asignamos a entradaOK el valor false para que vuelva a rellenar el formulario
-                $_REQUEST[$campo]="";
+                $_REQUEST[$campo]="";//Limpiamos los campos del formulario
             }
         }
     }else{
@@ -85,26 +70,35 @@ if(isset($_REQUEST['cancelar'])){//Si pulsa el botón de cancelar
             $consulta = $miDB->prepare($sql);//Preparamos la consulta
             $parametros = [":CodUsuario" => $_REQUEST['CodUsuario']];
 
-            $consulta->execute($parametros);//Pasamos los parámetros a la consulta
-            $registro = $consulta->fetchObject();
-            
-            if($consulta->rowCount()>0){
-                session_start();
-                
-                $nConexiones = $registro->T01_NumConexiones;
-                settype($nConexiones, "integer");
-                $sqlUpdate = "Update T01_Usuario set T01_NumConexiones = :NumConexiones, T01_FechaHoraUltimaConexion=:FechaHoraUltimaConexion where T01_CodUsuario=:CodUsuario";
-                $consultaUpdate = $miDB->prepare($sqlUpdate);//Preparamos la consulta
-                $parametrosUpdate = [":NumConexiones" => ($nConexiones+1),
-                                     ":FechaHoraUltimaConexion" => time(),
-                                     ":CodUsuario" => $_REQUEST['CodUsuario']];
-                $consultaUpdate->execute($parametrosUpdate);//Pasamos los parámetros a la consulta
-                
-                $_SESSION['CodUsuario']=$_REQUEST['CodUsuario'];
-                
-                header('Location: programa.php');
-                exit;
+            $consulta->execute($parametros);//Ejecutamos la consulta
+            $registro = $consulta->fetchObject();//Obtenemos el primer registro de la consulta
+
+            $nConexiones = $registro->T01_NumConexiones;//Almacenamos el numero de conexiones almacenado en la base de datos
+            $fechaHora = $registro->T01_FechaHoraUltimaConexion;//Almacenamos la fecha hora de la ultima conexion almacenada en la base de datos
+
+            settype($nConexiones, "integer");//Convertimos en entero el numero de conexiones devualto por la consulta
+            $sqlUpdate = "Update T01_Usuario set T01_NumConexiones = :NumConexiones, T01_FechaHoraUltimaConexion=:FechaHoraUltimaConexion where T01_CodUsuario=:CodUsuario";
+            $consultaUpdate = $miDB->prepare($sqlUpdate);//Preparamos la consulta
+            $parametrosUpdate = [":NumConexiones" => ($nConexiones+1),
+                                 ":FechaHoraUltimaConexion" => time(),
+                                 ":CodUsuario" => $_REQUEST['CodUsuario']];
+            $consultaUpdate->execute($parametrosUpdate);//Pasamos los parámetros a la consulta
+
+            session_start();//Iniciamos la sesión
+            $_SESSION['usuarioDAW215LoginLogoffTema5']=$_REQUEST['CodUsuario'];//Almacenamos en una variable de sesión el codigo del usuario
+            $_SESSION['FechaHoraUltimaConexion']=$fechaHora;//Almacenamos la fecha hora de la ultima conexion en una variable de sesion
+
+            if(!isset($_COOKIE['idioma'])){//Si no se ha establecido la cookie
+                setcookie("idioma", 'es', time()+2592000);//Ponemos que el idioma sea español
             }
+            
+            if(!isset($_COOKIE['saludo'])){//Si no se ha establecido la cookie
+                setcookie('saludo','Hola', time()+2592000);//Ponemos el saludo en español
+            }
+
+            header('Location: programa.php');//Redirigimos al usuario al programa
+            exit;
+            
             
         }catch(PDOException $excepcion){
             $errorExcepcion = $excepcion->getCode();//Almacenamos el código del error de la excepción en la variable $errorExcepcion
@@ -122,7 +116,7 @@ if(isset($_REQUEST['cancelar'])){//Si pulsa el botón de cancelar
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mto Departamentos</title>
+    <title>Login</title>
     <link href="../webroot/css/style.css" rel="stylesheet"> 
 </head>
 <body>
@@ -133,27 +127,31 @@ if(isset($_REQUEST['cancelar'])){//Si pulsa el botón de cancelar
         <div class="contenido">
             <form name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
                 <div>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario">Código de usuario: </label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario">Usuario: </label>
                     <input type="text" style="background-color: #D2D2D2" id="CodUsuario" name="CodUsuario" value="<?php echo(isset($_REQUEST['CodUsuario']) ? $_REQUEST['CodUsuario'] : null); ?>">
-                    <?php echo($aErrores['CodUsuario']!=null ? "<span style='color:red'>".$aErrores['CodUsuario']."</span>" : null); ?>
+                   
                     <br><br>
 
-                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password">Descripción de departamento: </label>
+                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password">Contraseña: </label>
                     <input type="password" style="background-color: #D2D2D2" id="DescDepartamento" name="Password" value="<?php echo(isset($_REQUEST['Password']) ? $_REQUEST['Password'] : null);?>">
-                    <?php echo($aErrores['Password']!=null ? "<span style='color:red'>".$aErrores['Password']."</span>" : null); ?>
+                    
                     <br><br>
-                    <?php
-                        if($aErroresEntrada['CodUsuario']!=null || $aErroresEntrada['Password']!=null){
-                            echo "<span style='color: red;'>Inicio de sesión erróneo</span><br><br>";
-                        }
-                    ?>
-                </div> 
+                </div>
                 <div>
                     <input type="submit" style="background-color: #a3f27b;" value="Iniciar sesión" name="aceptar" class="aceptar">
                 </div>
             </form>
         </div>
     </main>
+    <footer> 
+        <table class="tablaFooter">
+            <tr> 
+                <td><a href="http://daw215.ieslossauces.es/" target="_blank"><img src="../webroot/media/1&1.png" alt="1&1" width="45"></a></td>
+                <td style="font-size: 26px;"><a href="#">Cristina Núñez Sebastián</a></td>
+                <td><a href="https://github.com/CristinaNSSauces" target="_blank"><img src="../webroot/media/git.png" alt="git" width="45"></a></td>
+            </tr>
+        </table>
+    </footer>
 </body>
 </html>
 <?php

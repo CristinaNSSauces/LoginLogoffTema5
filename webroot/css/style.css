@@ -81,6 +81,11 @@ input.enviar{
     font-family: 'News Cycle', sans-serif;
 }
 
+#CodUsuario, #DescDepartamento{
+    width: 150px;
+    height: 25px;
+}
+
 .formularioBuscar{
     font-size: 20px;
     margin-left: 5%;
@@ -162,4 +167,12 @@ input.aceptar, input.cancelar{
 }
 .tBoton{
     width: 30px; 
+}
+
+h3, .formularioPrograma{
+    font-family: 'News Cycle', sans-serif;
+}
+
+.tablaFooter{
+    width: 100%;
 }
