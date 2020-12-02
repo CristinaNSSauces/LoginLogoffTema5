@@ -3,6 +3,23 @@
         *@author: Cristina Núñez
         *@since: 17/11/2020
     */
+    
+    if(!isset($_COOKIE['idioma'])){
+        setcookie("idioma", 'es', time()+2592000);//Ponemos que el idioma sea español
+        header('Location: login.php');
+        exit;
+    }
+
+    if(isset($_REQUEST['es'])){
+        setcookie("idioma", $_REQUEST['es'], time()+2592000);//Ponemos que el idioma sea español
+        header('Location: login.php');
+        exit;
+    }else if(isset($_REQUEST['en'])){
+        setcookie("idioma", $_REQUEST['en'], time()+2592000);//Ponemos que el idioma sea ingles
+        header('Location: login.php');
+        exit;
+    }
+    
     require_once '../core/libreriaValidacion.php';//Incluimos la librería de validación para comprobar los campos del formulario
     require_once "../config/confDBPDO.php";//Incluimos el archivo confDBPDO.php para poder acceder al valor de las constantes de los distintos valores de la conexión 
 
@@ -74,9 +91,10 @@
             $registro = $consulta->fetchObject();//Obtenemos el primer registro de la consulta
 
             $nConexiones = $registro->T01_NumConexiones;//Almacenamos el numero de conexiones almacenado en la base de datos
-            $fechaHora = $registro->T01_FechaHoraUltimaConexion;//Almacenamos la fecha hora de la ultima conexion almacenada en la base de datos
+            $fechaHoraUltimaConexion = $registro->T01_FechaHoraUltimaConexion;//Almacenamos la fecha hora de la ultima conexion almacenada en la base de datos
 
             settype($nConexiones, "integer");//Convertimos en entero el numero de conexiones devualto por la consulta
+            
             $sqlUpdate = "Update T01_Usuario set T01_NumConexiones = :NumConexiones, T01_FechaHoraUltimaConexion=:FechaHoraUltimaConexion where T01_CodUsuario=:CodUsuario";
             $consultaUpdate = $miDB->prepare($sqlUpdate);//Preparamos la consulta
             $parametrosUpdate = [":NumConexiones" => ($nConexiones+1),
@@ -86,7 +104,7 @@
 
             session_start();//Iniciamos la sesión
             $_SESSION['usuarioDAW215LoginLogoffTema5']=$_REQUEST['CodUsuario'];//Almacenamos en una variable de sesión el codigo del usuario
-            $_SESSION['FechaHoraUltimaConexion']=$fechaHora;//Almacenamos la fecha hora de la ultima conexion en una variable de sesion
+            $_SESSION['FechaHoraUltimaConexionAnterior']=$fechaHoraUltimaConexion;//Almacenamos la fecha hora de la ultima conexion en una variable de sesion
 
             if(!isset($_COOKIE['idioma'])){//Si no se ha establecido la cookie
                 setcookie("idioma", 'es', time()+2592000);//Ponemos que el idioma sea español
@@ -122,10 +140,27 @@
 <body>
     <header>
         <div class="logo">Login Logoff Tema 5</div>
+        <form name="formularioIdioma" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
+            <button type="submit" name="es" value="es" style="background-color: transparent; border: 0px;"><img src="../webroot/media/español.png" width="35px"></button>
+            <button type="submit" name="en" value="en" style="background-color: transparent; border: 0px;"><img src="../webroot/media/ingles.png" width="35px"></button>
+        </form>
     </header>
     <main class="mainEditar">
         <div class="contenido">
             <form name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
+                <?php
+                    if($_COOKIE['idioma']=='es'){
+                ?>
+                    <h3 style="text-align: center;">Bienvenido</h3>
+                <?php
+                    }
+                    if($_COOKIE['idioma']=='en'){
+                ?>
+                    <h3 style="text-align: center;">Welcome</h3>
+                <?php
+                    }
+                ?>
+                <br>
                 <div>
                     <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario">Usuario: </label>
                     <input type="text" style="background-color: #D2D2D2" id="CodUsuario" name="CodUsuario" value="<?php echo(isset($_REQUEST['CodUsuario']) ? $_REQUEST['CodUsuario'] : null); ?>">
@@ -138,7 +173,7 @@
                     <br><br>
                 </div>
                 <div>
-                    <input type="submit" style="background-color: #a3f27b;" value="Iniciar sesión" name="aceptar" class="aceptar">
+                    <input type="submit" style="background-color: #f0dd7f;" value="Iniciar sesión" name="aceptar" class="aceptar">
                 </div>
             </form>
         </div>

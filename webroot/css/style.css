@@ -118,9 +118,10 @@ input.enviar{
 
 input.aceptar, input.cancelar{
     font-family: 'Bebas Neue', cursive;
-    width: 270px;
-    height: 55px;
+    width: 230px;
+    height: 30px;
     font-size: 20px;
+    border-radius: 5px;
 }
 
 .mainEditar{
@@ -175,4 +176,20 @@ h3, .formularioPrograma{
 
 .tablaFooter{
     width: 100%;
+}
+
+.formularioIdioma{
+    position: relative;
+    left: -3%;
+}
+
+#cerrarSesion{
+    font-family: 'Bebas Neue', cursive;
+    width: 100px;
+    font-size: 17px;
+    position: absolute;
+    top: 15%;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: #f0dd7f;
 }

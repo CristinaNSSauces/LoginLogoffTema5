@@ -10,45 +10,41 @@
         exit;
     }
     
+    if($_COOKIE['idioma']=='es'){
+        $saludo="Hola";
+    }
+    
+    if($_COOKIE['idioma']=='en'){
+        $saludo="Hello";
+    }
+    
+    if(isset($_REQUEST['es'])){
+        setcookie("idioma", $_REQUEST['es'], time()+2592000);//Ponemos que el idioma sea español
+        $saludo="Hola";
+        header('Location: programa.php');
+        exit;
+    }elseif(isset($_REQUEST['en'])){
+        setcookie("idioma", $_REQUEST['en'], time()+2592000);//Ponemos que el idioma sea ingles
+        $saludo="Hello";
+        header('Location: programa.php');
+        exit;
+    }
+    
+    if(isset($_REQUEST['detalles'])){
+        header('Location: detalles.php');
+        exit;
+    }
+    
+    if(isset($_REQUEST['salir'])){
+        session_destroy();
+        header('Location: login.php');
+        exit;
+    }
+    
     require_once '../core/libreriaValidacion.php';//Importamos la librería de validación para validar los campos del formulario necesarios
     require_once '../config/confDBPDO.php';
-    $errorIdioma = null;//Creamos e inicializamos $errorIdioma a null, en ella almacenaremos (si hay) los errores al validar el campo idioma del formulario
-    $entradaOK = true;//Creamos e inicializamos $entradaOK a true
     
-    if(isset($_REQUEST['detalles']) || isset($_REQUEST['salir'])){ //Comprobamos que el usuario haya enviado el formulario
-        $errorIdioma = validacionFormularios::validarElementoEnLista($_REQUEST['idioma'], ['es','en','fr']);//Validamos el elemento lista del formulario, de tener error almacenamos el mensaje en la variable $errorIdioma
-        if ($errorIdioma != null) {
-            $entradaOK = false; // En caso de que haya algún error le asignamos a entradaOK el valor false para que vuelva a rellenar el formulario                             
-        }         
-    }else{
-        $entradaOK = false; // Si el usuario no ha enviado el formulario asignamos a entradaOK el valor false para que rellene el formulario
-    }
-    if($entradaOK){ // Si el usuario ha rellenado el formulario correctamente rellenamos el array aFormulario con las respuestas introducidas por el usuario
-        if($_REQUEST['idioma']=='es'){//Si el idioma seleccionado por el usuario es español
-            setcookie("idioma", 'es', time()+2592000);//Creamos o cambiamos la cookie idioma al valor 'es'
-            setcookie('saludo','Hola', time()+2592000);//Creamos o cambiamos la cookie saludo al valor 'del idioma seleccionado por el usuario'Hola'
-        }
-        if($_REQUEST['idioma']=='en'){//Si el idioma seleccionado por el usuario es ingles
-            setcookie("idioma", 'en', time()+2592000);//Creamos o cambiamos la cookie idioma al valor 'en'
-            setcookie('saludo','Hello', time()+2592000);//Creamos o cambiamos la cookie saludo al valor 'del idioma seleccionado por el usuario'Hello'
-        }
-        if($_REQUEST['idioma']=='fr'){//Si el idioma seleccionado por el usuario es francés
-            setcookie("idioma", 'fr', time()+2592000);//Creamos o cambiamos la cookie idioma al valor 'fr'
-            setcookie('saludo','Salut', time()+2592000);//Creamos o cambiamos la cookie saludo al valor 'del idioma seleccionado por el usuario'Salut'
-        }
-        if(isset($_REQUEST['detalles'])){//Si pulsa el botón de detalles
-            header('Location: detalles.php');//Redirigimos al usuario a la ventana de detalles
-            exit;
-        }
-
-        if(isset($_REQUEST['salir'])){//Si el usuario pulsa el botón de salir
-            session_destroy();
-            header('Location: login.php');//Redirigimos al usuario al index del tema 5
-            exit;
-        }
-    }
 ?>
-<!DOCTYPE html>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -60,6 +56,11 @@
 <body>
     <header>
         <div class="logo">Programa</div>
+        <form name="formularioIdioma" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioIdioma">
+            <button type="submit" name="es" value="es" style="background-color: transparent; border: 0px;"><img src="../webroot/media/español.png" width="35px"></button>
+            <button type="submit" name="en" value="en" style="background-color: transparent; border: 0px;"><img src="../webroot/media/ingles.png" width="35px"></button>
+            <input type="submit" value="CERRAR SESIÓN" name="salir" id="cerrarSesion">
+        </form>
     </header>
     <main class="mainEditar">
         <div class="contenido">
@@ -88,19 +89,19 @@
                unset($miDB); //cerramos la conexion con la base de datos
             }
             
-            if(isset($_COOKIE['idioma']) && isset($_COOKIE['saludo'])){//Comprobamos que existe $_COOKIE['idioma'] y ($_COOKIE['saludo']
+            //if(isset($_COOKIE['idioma']) && isset($_COOKIE['saludo'])){//Comprobamos que existe $_COOKIE['idioma'] y ($_COOKIE['saludo']
             ?>
     
-                    <h3><?php echo $_COOKIE['saludo']." ".$descUsuario; //Mostramos el saludo en el idioma correspondiente?></h3>
+                    <h3><?php echo $saludo." ".$descUsuario; //Mostramos el saludo en el idioma correspondiente?></h3>
                     <?php
-                        if($nConexiones==1){
+                        if($nConexiones==1){//Si es la primera vez que inicia sesion
                             ?>
                             <h3>Es la primera vez que inicias sesión</h3>
                     <?php
-                        }else{
+                        }else{//Si no es la prinera vez que inicias sesion
                             ?>
                             <h3>Has iniciado sesion <?php echo $nConexiones ?> veces</h3>
-                            <h3>Última conexión: <?php echo date('d/m/Y H:i:s',$_SESSION['FechaHoraUltimaConexion'])?> </h3>
+                            <h3>Última conexión: <?php echo date('d/m/Y H:i:s',$_SESSION['FechaHoraUltimaConexionAnterior'])?> </h3>
                     <?php
                             
                         }
@@ -121,38 +122,11 @@
                     <h3>Langage: <?php echo $_COOKIE['idioma']; //Mostramos el idioma seleccionado en francés?></h3>
             <?php
                 }
-            }
+            //}
         ?>
-           <form class="formularioPrograma" name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post">
-            <label for="idioma">Seleccione Idioma:</label>
-                <select id="idioma" name="idioma">
-                  <option value="es" <?php 
-                    if(isset($_COOKIE['idioma'])){//si existe la cookie idioma
-                        if($_COOKIE['idioma']=='es'){//Si el idioma almacenado es español
-                            echo 'selected';//Será el valor seleccionado en nuestra lista
-                        }
-                    }
-                    ?>>Español</option>
-                  <option value="en" <?php
-                    if(isset($_COOKIE['idioma'])){//si existe la cookie idioma
-                        if($_COOKIE['idioma']=='en'){//Si el idioma almacenado es ingles
-                            echo 'selected';//Será el valor seleccionado en nuestra lista
-                        }
-                    }
-                    ?>>English</option>
-                  <option value="fr" <?php
-                    if(isset($_COOKIE['idioma'])){//si existe la cookie idioma
-                        if($_COOKIE['idioma']=='fr'){//Si el idioma almacenado es frances
-                            echo 'selected';//Será el valor seleccionado en nuestra lista
-                        }
-                    }     
-                    ?>>Français</option>
-                </select>
-                <br><br>
-                <input type="submit" value="DETALLES" name="detalles">
-                <input type="submit" value="CERRAR SESIÓN" name="salir">
-                <br><br>
-        </form>
+            <form class="formularioPrograma" name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post">
+                <input type="submit" value="DETALLES" name="detalles" class="aceptar">
+            </form>
         </div>
     </main>
     <footer> 
