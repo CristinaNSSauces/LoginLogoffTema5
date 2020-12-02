@@ -12,10 +12,20 @@
     
     if($_COOKIE['idioma']=='es'){
         $saludo="Hola";
-    }
-    
-    if($_COOKIE['idioma']=='en'){
+        $fechaIdioma="Fecha Hora Última conexión: ";
+        $primeraConexionIdioma="Es la primera vez que inicias sesión";
+        $conexionesIdioma="Número de conexiones: ";
+        $detallesIdioma="Detalles";
+        $editarPerfilIdioma="Editar perfil";
+        $cerrarSesionIdioma="Cerrar Sesión";
+    }else{
         $saludo="Hello";
+        $fechaIdioma="Date Time Last connection: ";
+        $primeraConexionIdioma="It is the first time you log in";
+        $conexionesIdioma="Number of connections: ";
+        $detallesIdioma="Details";
+        $editarPerfilIdioma="Edit profile";
+        $cerrarSesionIdioma="logoff";
     }
     
     if(isset($_REQUEST['es'])){
@@ -23,7 +33,7 @@
         $saludo="Hola";
         header('Location: programa.php');
         exit;
-    }elseif(isset($_REQUEST['en'])){
+    }else if(isset($_REQUEST['en'])){
         setcookie("idioma", $_REQUEST['en'], time()+2592000);//Ponemos que el idioma sea ingles
         $saludo="Hello";
         header('Location: programa.php');
@@ -32,6 +42,11 @@
     
     if(isset($_REQUEST['detalles'])){
         header('Location: detalles.php');
+        exit;
+    }
+    
+    if(isset($_REQUEST['editarPerfil'])){
+        header('Location: editarPerfil.php');
         exit;
     }
     
@@ -59,7 +74,7 @@
         <form name="formularioIdioma" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioIdioma">
             <button type="submit" name="es" value="es" style="background-color: transparent; border: 0px;"><img src="../webroot/media/español.png" width="35px"></button>
             <button type="submit" name="en" value="en" style="background-color: transparent; border: 0px;"><img src="../webroot/media/ingles.png" width="35px"></button>
-            <input type="submit" value="CERRAR SESIÓN" name="salir" id="cerrarSesion">
+            <input type="submit" value="<?php echo $cerrarSesionIdioma ?>" name="salir" id="cerrarSesion">
         </form>
     </header>
     <main class="mainEditar">
@@ -96,12 +111,12 @@
                     <?php
                         if($nConexiones==1){//Si es la primera vez que inicia sesion
                             ?>
-                            <h3>Es la primera vez que inicias sesión</h3>
+                            <h3><?php echo $primeraConexionIdioma; ?></h3>
                     <?php
                         }else{//Si no es la prinera vez que inicias sesion
                             ?>
-                            <h3>Has iniciado sesion <?php echo $nConexiones ?> veces</h3>
-                            <h3>Última conexión: <?php echo date('d/m/Y H:i:s',$_SESSION['FechaHoraUltimaConexionAnterior'])?> </h3>
+                            <h3><?php echo $conexionesIdioma.$nConexiones ?></h3>
+                            <h3><?php echo $fechaIdioma.date('d/m/Y H:i:s',$_SESSION['FechaHoraUltimaConexionAnterior']);?> </h3>
                     <?php
                             
                         }
@@ -125,7 +140,7 @@
             //}
         ?>
             <form class="formularioPrograma" name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post">
-                <input type="submit" value="DETALLES" name="detalles" class="aceptar">
+                <input type="submit" value="<?php echo $detallesIdioma; ?>" name="detalles" class="aceptar">
             </form>
         </div>
     </main>

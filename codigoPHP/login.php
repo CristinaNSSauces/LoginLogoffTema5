@@ -20,6 +20,20 @@
         exit;
     }
     
+    if($_COOKIE['idioma']=='es'){
+        $saludo="Bienvenido";
+        $usuarioIdioma="Usuario: ";
+        $passwordIdioma="Contraseña: ";
+        $registrarseIdioma="Registrarse";
+        $iniciarSesionIdioma="Iniciar Sesión";
+    }else{
+        $saludo="Welcome";
+        $usuarioIdioma="User: ";
+        $passwordIdioma="Password: ";
+        $registrarseIdioma="Register";
+        $iniciarSesionIdioma="Log in";
+    }
+    
     require_once '../core/libreriaValidacion.php';//Incluimos la librería de validación para comprobar los campos del formulario
     require_once "../config/confDBPDO.php";//Incluimos el archivo confDBPDO.php para poder acceder al valor de las constantes de los distintos valores de la conexión 
 
@@ -105,16 +119,7 @@
             session_start();//Iniciamos la sesión
             $_SESSION['usuarioDAW215LoginLogoffTema5']=$_REQUEST['CodUsuario'];//Almacenamos en una variable de sesión el codigo del usuario
             $_SESSION['FechaHoraUltimaConexionAnterior']=$fechaHoraUltimaConexion;//Almacenamos la fecha hora de la ultima conexion en una variable de sesion
-
-            if(!isset($_COOKIE['idioma'])){//Si no se ha establecido la cookie
-                setcookie("idioma", 'es', time()+2592000);//Ponemos que el idioma sea español
-            }
-            
-            if(!isset($_COOKIE['saludo'])){//Si no se ha establecido la cookie
-                setcookie('saludo','Hola', time()+2592000);//Ponemos el saludo en español
-            }
-
-            header('Location: programa.php');//Redirigimos al usuario al programa
+            header('Location: programa.php');
             exit;
             
             
@@ -148,32 +153,21 @@
     <main class="mainEditar">
         <div class="contenido">
             <form name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
-                <?php
-                    if($_COOKIE['idioma']=='es'){
-                ?>
-                    <h3 style="text-align: center;">Bienvenido</h3>
-                <?php
-                    }
-                    if($_COOKIE['idioma']=='en'){
-                ?>
-                    <h3 style="text-align: center;">Welcome</h3>
-                <?php
-                    }
-                ?>
+                <h3 style="text-align: center;"><?php echo $saludo; ?></h3>
                 <br>
                 <div>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario">Usuario: </label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario"><?php echo $usuarioIdioma; ?></label>
                     <input type="text" style="background-color: #D2D2D2" id="CodUsuario" name="CodUsuario" value="<?php echo(isset($_REQUEST['CodUsuario']) ? $_REQUEST['CodUsuario'] : null); ?>">
                    
                     <br><br>
 
-                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password">Contraseña: </label>
+                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password"><?php echo $passwordIdioma; ?></label>
                     <input type="password" style="background-color: #D2D2D2" id="DescDepartamento" name="Password" value="<?php echo(isset($_REQUEST['Password']) ? $_REQUEST['Password'] : null);?>">
                     
                     <br><br>
                 </div>
                 <div>
-                    <input type="submit" style="background-color: #f0dd7f;" value="Iniciar sesión" name="aceptar" class="aceptar">
+                    <input type="submit" style="background-color: #f0dd7f;" value="<?php echo $iniciarSesionIdioma; ?>" name="aceptar" class="aceptar">
                 </div>
             </form>
         </div>
