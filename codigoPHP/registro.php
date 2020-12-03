@@ -1,45 +1,31 @@
 <?php
     /**
         *@author: Cristina Núñez
-        *@since: 17/11/2020
+        *@since: 02/12/2020
     */
-    
-    if(!isset($_COOKIE['idioma'])){
-        setcookie("idioma", 'es', time()+2592000);//Ponemos que el idioma sea español
+    if(isset($_REQUEST['cancelar'])){
         header('Location: login.php');
-        exit;
-    }
-
-    if(isset($_REQUEST['es'])){
-        setcookie("idioma", $_REQUEST['es'], time()+2592000);//Ponemos que el idioma sea español
-        header('Location: login.php');
-        exit;
-    }else if(isset($_REQUEST['en'])){
-        setcookie("idioma", $_REQUEST['en'], time()+2592000);//Ponemos que el idioma sea ingles
-        header('Location: login.php');
-        exit;
-    }
-    
-    if(isset($_REQUEST['registrarse'])){
-        header('Location: registro.php');
         exit;
     }
     
     if($_COOKIE['idioma']=='es'){
         $saludo="Bienvenido";
         $usuarioIdioma="Usuario: ";
+        $descripcionIdioma="Descripción: ";
         $passwordIdioma="Contraseña: ";
-        $registrarseIdioma="Registrarse";
-        $fraseRegistroIdioma="¿Aún no estás registrado?";
-        $iniciarSesionIdioma="Iniciar Sesión";
+        $passwordRepetidaIdioma="Repita la contraseña: ";
+        $registrarseIdioma="Registrarme";
+        $cancelarIdioma="Cancelar";
     }else{
         $saludo="Welcome";
         $usuarioIdioma="User: ";
+        $descripcionIdioma="Description: ";
         $passwordIdioma="Password: ";
+        $passwordRepetidaIdioma="Repeat Password: ";
         $registrarseIdioma="Register";
-        $fraseRegistroIdioma="Not registered yet?";
-        $iniciarSesionIdioma="Log in";
+        $cancelarIdioma="Cancel";
     }
+    
     
     require_once '../core/libreriaValidacion.php';//Incluimos la librería de validación para comprobar los campos del formulario
     require_once "../config/confDBPDO.php";//Incluimos el archivo confDBPDO.php para poder acceder al valor de las constantes de los distintos valores de la conexión 
@@ -52,16 +38,20 @@
 
     //Declaramos el array de errores y lo inicializamos a null
     $aErrores = ['CodUsuario' => null,
-                 'Password' => null];
+                 'Descripcion' => null,
+                 'Password' => null,
+                 'PasswordRepetida' => null];
 
     if(isset($_REQUEST['aceptar'])){ //Comprobamos que el usuario haya enviado el formulario
         $aErrores['CodUsuario'] = validacionFormularios::comprobarAlfaNumerico($_REQUEST['CodUsuario'], 15, 3, OBLIGATORIO);
+        $aErrores['Descripcion'] = validacionFormularios::comprobarAlfaNumerico($_REQUEST['Descripcion'], 255, 3, OBLIGATORIO);
         $aErrores['Password'] = validacionFormularios::validarPassword($_REQUEST['Password'], 8, 3, 1, OBLIGATORIO);
+        $aErrores['PasswordRepetida'] = validacionFormularios::validarPassword($_REQUEST['PasswordRepetida'], 8, 3, 1, OBLIGATORIO);
         try{//validamos que la CodUsuario sea correcta
             $miDB = new PDO(DNS,USER,PASSWORD);//Instanciamos un objeto PDO y establecemos la conexión
             $miDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);//Configuramos las excepciones
 
-            $sqlUsuario = "Select T01_Password from T01_Usuario where T01_CodUsuario=:CodUsuario";
+            $sqlUsuario = "Select * from T01_Usuario where T01_CodUsuario=:CodUsuario";
             $consultaUsuario = $miDB->prepare($sqlUsuario);//Preparamos la consulta
             $parametrosUsuario = [":CodUsuario" => $_REQUEST['CodUsuario']];
 
@@ -69,14 +59,10 @@
             $registro = $consultaUsuario->fetchObject();
             
             if($consultaUsuario->rowCount()>0){//Si la consulta devuelve algun registro el codigo del usuario es correcto
-                $passwordEncriptado=hash("sha256", ($_REQUEST['CodUsuario'].$_REQUEST['Password']));
-                if($passwordEncriptado!=$registro->T01_Password){//Comprobamos que la contraseña sea correcta
-                    $aErrores['CodUsuario'] = "Error autentificacion";//Si la contraseña no es correcta guardamos un mensaje de error en el array de errores
-                    $aErrores['Password'] = "Error autentificacion";//Si la contraseña no es correcta guardamos un mensaje de error en el array de errores
-                }
-            }else{//Si la consulta no devuelve ningun registro el codigo del usuario no es correcto
-                $aErrores['CodUsuario'] = "Error autentificacion";//Almacenamos un mensaje de error en el array de errores
-                $aErrores['Password'] = "Error autentificacion";//Almacenamos un mensaje de error en el array de errores
+                $aErrores['CodUsuario'] = "El usuario ya existe";
+            }
+            if($_REQUEST['Password']!=$_REQUEST['PasswordRepetida']){
+                $aErrores['PasswordRepetida']="Error, las contraseñas no coinciden";
             }
             
         }catch(PDOException $excepcion){
@@ -104,17 +90,13 @@
             $miDB = new PDO(DNS,USER,PASSWORD);//Instanciamos un objeto PDO y establecemos la conexión
             $miDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);//Configuramos las excepciones
 
-            $sql = "Select T01_NumConexiones, T01_FechaHoraUltimaConexion from T01_Usuario where T01_CodUsuario=:CodUsuario";
+            $sql = "Insert into T01_Usuario (T01_CodUsuario, T01_DescUsuario, T01_Password) values (:CodUsuario, :Descripcion, :Password)";
             $consulta = $miDB->prepare($sql);//Preparamos la consulta
-            $parametros = [":CodUsuario" => $_REQUEST['CodUsuario']];
+            $parametros = [":CodUsuario" => $_REQUEST['CodUsuario'],
+                           ":Descripcion" => $_REQUEST['Descripcion'],
+                           ":Password" => hash("sha256", ($_REQUEST['CodUsuario'].$_REQUEST['Password']))];
 
             $consulta->execute($parametros);//Ejecutamos la consulta
-            $registro = $consulta->fetchObject();//Obtenemos el primer registro de la consulta
-
-            $nConexiones = $registro->T01_NumConexiones;//Almacenamos el numero de conexiones almacenado en la base de datos
-            $fechaHoraUltimaConexion = $registro->T01_FechaHoraUltimaConexion;//Almacenamos la fecha hora de la ultima conexion almacenada en la base de datos
-
-            settype($nConexiones, "integer");//Convertimos en entero el numero de conexiones devualto por la consulta
             
             $sqlUpdate = "Update T01_Usuario set T01_NumConexiones = :NumConexiones, T01_FechaHoraUltimaConexion=:FechaHoraUltimaConexion where T01_CodUsuario=:CodUsuario";
             $consultaUpdate = $miDB->prepare($sqlUpdate);//Preparamos la consulta
@@ -122,13 +104,13 @@
                                  ":FechaHoraUltimaConexion" => time(),
                                  ":CodUsuario" => $_REQUEST['CodUsuario']];
             $consultaUpdate->execute($parametrosUpdate);//Pasamos los parámetros a la consulta
-
+            
             session_start();//Iniciamos la sesión
             $_SESSION['usuarioDAW215LoginLogoffTema5']=$_REQUEST['CodUsuario'];//Almacenamos en una variable de sesión el codigo del usuario
-            $_SESSION['FechaHoraUltimaConexionAnterior']=$fechaHoraUltimaConexion;//Almacenamos la fecha hora de la ultima conexion en una variable de sesion
+            $_SESSION['FechaHoraUltimaConexionAnterior']=null;//Almacenamos la fecha hora de la ultima conexion en una variable de sesion
+            
             header('Location: programa.php');
             exit;
-            
             
         }catch(PDOException $excepcion){
             $errorExcepcion = $excepcion->getCode();//Almacenamos el código del error de la excepción en la variable $errorExcepcion
@@ -151,34 +133,51 @@
 </head>
 <body>
     <header>
-        <div class="logo">Login Logoff Tema 5</div>
-        <form name="formularioIdioma" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
-            <button type="submit" name="es" value="es" style="background-color: transparent; border: 0px;"><img src="../webroot/media/español.png" width="35px"></button>
-            <button type="submit" name="en" value="en" style="background-color: transparent; border: 0px;"><img src="../webroot/media/ingles.png" width="35px"></button>
-        </form>
+        <div class="logo">Registro</div>
     </header>
     <main class="mainEditar">
         <div class="contenido">
             <form name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
-                <h3 style="text-align: center;"><?php echo $saludo; ?></h3>
+                    <h3 style="text-align: center;"><?php echo $saludo; ?></h3>
                 <br>
                 <div>
                     <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario"><?php echo $usuarioIdioma; ?></label>
-                    <input type="text" style="background-color: #D2D2D2" id="CodUsuario" name="CodUsuario" value="<?php echo(isset($_REQUEST['CodUsuario']) ? $_REQUEST['CodUsuario'] : null); ?>">
-                   
+                    <input type="text" style="background-color: #D2D2D2" name="CodUsuario" value="<?php echo(isset($_REQUEST['CodUsuario']) ? $_REQUEST['CodUsuario'] : null); ?>">
+                    <?php
+                        if ($aErrores['CodUsuario'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
+                            echo "<span style='color: red;'>".$aErrores['CodUsuario']."</span>";
+                        }
+                    ?>
+                    <br><br>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="Descripcion"><?php echo $descripcionIdioma; ?></label>
+                    <input type="text" style="background-color: #D2D2D2" name="Descripcion" value="<?php echo(isset($_REQUEST['Descripcion']) ? $_REQUEST['Descripcion'] : null); ?>">
+                    <?php
+                        if ($aErrores['Descripcion'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
+                            echo "<span style='color: red;'>".$aErrores['Descripcion']."</span>";
+                        }
+                    ?>
                     <br><br>
 
                     <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password"><?php echo $passwordIdioma; ?></label>
-                    <input type="password" style="background-color: #D2D2D2" id="DescDepartamento" name="Password" value="<?php echo(isset($_REQUEST['Password']) ? $_REQUEST['Password'] : null);?>">
+                    <input type="password" style="background-color: #D2D2D2" name="Password" value="<?php echo(isset($_REQUEST['Password']) ? $_REQUEST['Password'] : null);?>">
+                    <?php
+                        if ($aErrores['Password'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
+                            echo "<span style='color: red;'>".$aErrores['Password']."</span>";
+                        }
+                    ?>
+                    <br><br>
+                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="PasswordRepetida"><?php echo $passwordRepetidaIdioma; ?></label>
+                    <input type="password" style="background-color: #D2D2D2" name="PasswordRepetida" value="<?php echo(isset($_REQUEST['PasswordRepetida']) ? $_REQUEST['PasswordRepetida'] : null);?>">
+                    <?php
+                        if ($aErrores['PasswordRepetida'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
+                            echo "<span style='color: red;'>".$aErrores['PasswordRepetida']."</span>";
+                        }
+                    ?>
                     <br><br>
                 </div>
                 <div>
-                    <input type="submit" style="background-color: #f0dd7f;" value="<?php echo $iniciarSesionIdioma; ?>" name="aceptar" class="aceptar">
-                    <br>
-                    <br>
-                    <h3 style="text-align: center;"><?php echo $fraseRegistroIdioma; ?></h3>
-                    <br>
-                    <input type="submit" value="<?php echo $registrarseIdioma; ?>" name="registrarse" class="aceptar">
+                    <input type="submit" value="<?php echo $registrarseIdioma; ?>" name="aceptar" class="aceptar">
+                    <input type="submit" style="background-color: #ff8787;" value="<?php echo $cancelarIdioma; ?>" name="cancelar" class="aceptar">
                 </div>
             </form>
         </div>

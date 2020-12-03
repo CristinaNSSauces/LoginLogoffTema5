@@ -180,16 +180,37 @@ h3, .formularioPrograma{
 
 .formularioIdioma{
     position: relative;
-    left: -3%;
+    left: -10px;
 }
 
 #cerrarSesion{
     font-family: 'Bebas Neue', cursive;
     width: 100px;
     font-size: 17px;
-    position: absolute;
-    top: 15%;
+    position: relative;
+    top:-12px;
+    right: -10px;
     border: 1px solid black;
     border-radius: 5px;
     background-color: #f0dd7f;
+}
+
+#editarPerfil{
+    font-family: 'Bebas Neue', cursive;
+    width: 100px;
+    font-size: 17px;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: #f0dd7f;
+    position: relative;
+    top:-12px;
+    right: -5px;
+}
+
+.editarPerfil{
+    font-family: 'Bebas Neue', cursive;
+    width: 230px;
+    height: 30px;
+    font-size: 20px;
+    border-radius: 5px;
 }

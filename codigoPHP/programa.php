@@ -28,18 +28,6 @@
         $cerrarSesionIdioma="logoff";
     }
     
-    if(isset($_REQUEST['es'])){
-        setcookie("idioma", $_REQUEST['es'], time()+2592000);//Ponemos que el idioma sea español
-        $saludo="Hola";
-        header('Location: programa.php');
-        exit;
-    }else if(isset($_REQUEST['en'])){
-        setcookie("idioma", $_REQUEST['en'], time()+2592000);//Ponemos que el idioma sea ingles
-        $saludo="Hello";
-        header('Location: programa.php');
-        exit;
-    }
-    
     if(isset($_REQUEST['detalles'])){
         header('Location: detalles.php');
         exit;
@@ -58,6 +46,31 @@
     
     require_once '../core/libreriaValidacion.php';//Importamos la librería de validación para validar los campos del formulario necesarios
     require_once '../config/confDBPDO.php';
+
+    try{
+        $miDB = new PDO(DNS,USER,PASSWORD);//Instanciamos un objeto PDO y establecemos la conexión
+        $miDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);//Configuramos las excepciones
+
+        $sql = "Select T01_NumConexiones, T01_DescUsuario, T01_ImagenUsuario from T01_Usuario where T01_CodUsuario=:CodUsuario";
+        $consulta = $miDB->prepare($sql);//Preparamos la consulta
+        $parametros = [":CodUsuario" => $_SESSION['usuarioDAW215LoginLogoffTema5']];
+
+        $consulta->execute($parametros);//Ejecutamos la consulta
+        $registro = $consulta->fetchObject();//Obtenemos el primer registro de la consulta
+
+        $nConexiones=$registro->T01_NumConexiones;//Guardamos el número de conexiones del usuario en $nConexiones
+        $descUsuario=$registro->T01_DescUsuario;//Guardamos la descripcion del usuario
+        $imagenUsuario=$registro->T01_ImagenUsuario;//Guardamos la descripcion del usuario
+
+    }catch(PDOException $excepcion){
+        $errorExcepcion = $excepcion->getCode();//Almacenamos el código del error de la excepción en la variable $errorExcepcion
+        $mensajeExcepcion = $excepcion->getMessage();//Almacenamos el mensaje de la excepción en la variable $mensajeExcepcion
+
+        echo "<span style='color: red;'>Error: </span>".$mensajeExcepcion."<br>";//Mostramos el mensaje de la excepción
+        echo "<span style='color: red;'>Código del error: </span>".$errorExcepcion;//Mostramos el código de la excepción
+    } finally {
+       unset($miDB); //cerramos la conexion con la base de datos
+    }
     
 ?>
 <!DOCTYPE html>
@@ -72,41 +85,18 @@
     <header>
         <div class="logo">Programa</div>
         <form name="formularioIdioma" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioIdioma">
-            <button type="submit" name="es" value="es" style="background-color: transparent; border: 0px;"><img src="../webroot/media/español.png" width="35px"></button>
-            <button type="submit" name="en" value="en" style="background-color: transparent; border: 0px;"><img src="../webroot/media/ingles.png" width="35px"></button>
+            <?php
+            if($imagenUsuario!=null){
+                echo '<img style="margin-rigth: 2px;" src = "data:image/png;base64,' . base64_encode($imagenUsuario) . '" width = "50px"/>';
+            }
+            ?>
+            <input type="submit" value="<?php echo $editarPerfilIdioma; ?>" name="editarPerfil" id="editarPerfil">
             <input type="submit" value="<?php echo $cerrarSesionIdioma ?>" name="salir" id="cerrarSesion">
         </form>
     </header>
     <main class="mainEditar">
         <div class="contenido">
-        <?php
-            try{
-                $miDB = new PDO(DNS,USER,PASSWORD);//Instanciamos un objeto PDO y establecemos la conexión
-                $miDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);//Configuramos las excepciones
-
-                $sql = "Select T01_NumConexiones, T01_DescUsuario from T01_Usuario where T01_CodUsuario=:CodUsuario";
-                $consulta = $miDB->prepare($sql);//Preparamos la consulta
-                $parametros = [":CodUsuario" => $_SESSION['usuarioDAW215LoginLogoffTema5']];
-
-                $consulta->execute($parametros);//Ejecutamos la consulta
-                $registro = $consulta->fetchObject();//Obtenemos el primer registro de la consulta
-                
-                $nConexiones=$registro->T01_NumConexiones;//Guardamos el número de conexiones del usuario en $nConexiones
-                $descUsuario=$registro->T01_DescUsuario;//Guardamos la descripcion del usuario
-                
-            }catch(PDOException $excepcion){
-                $errorExcepcion = $excepcion->getCode();//Almacenamos el código del error de la excepción en la variable $errorExcepcion
-                $mensajeExcepcion = $excepcion->getMessage();//Almacenamos el mensaje de la excepción en la variable $mensajeExcepcion
-
-                echo "<span style='color: red;'>Error: </span>".$mensajeExcepcion."<br>";//Mostramos el mensaje de la excepción
-                echo "<span style='color: red;'>Código del error: </span>".$errorExcepcion;//Mostramos el código de la excepción
-            } finally {
-               unset($miDB); //cerramos la conexion con la base de datos
-            }
-            
-            //if(isset($_COOKIE['idioma']) && isset($_COOKIE['saludo'])){//Comprobamos que existe $_COOKIE['idioma'] y ($_COOKIE['saludo']
-            ?>
-    
+            <br><br>
                     <h3><?php echo $saludo." ".$descUsuario; //Mostramos el saludo en el idioma correspondiente?></h3>
                     <?php
                         if($nConexiones==1){//Si es la primera vez que inicia sesion
@@ -137,7 +127,6 @@
                     <h3>Langage: <?php echo $_COOKIE['idioma']; //Mostramos el idioma seleccionado en francés?></h3>
             <?php
                 }
-            //}
         ?>
             <form class="formularioPrograma" name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post">
                 <input type="submit" value="<?php echo $detallesIdioma; ?>" name="detalles" class="aceptar">
