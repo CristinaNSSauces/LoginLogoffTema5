@@ -16,21 +16,19 @@
         exit;
     }
     
-    if($_COOKIE['idioma']=='es'){
-        $saludo="Bienvenido";
-        $passwordIdioma="Contraseña actual: ";
-        $passwordNuevaIdioma="Nueva contraseña: ";
-        $passwordRepetidaIdioma="Repita contraseña: ";
-        $aceptarIdioma="Aceptar";
-        $cancelarIdioma="Cancelar";
-    }else{
-        $saludo="Welcome";
-        $passwordIdioma="Current password: ";
-        $passwordNuevaIdioma="New password: ";
-        $passwordRepetidaIdioma="Repeat password: ";
-        $aceptarIdioma="Acept";
-        $cancelarIdioma="Cancel";
-    }
+    $aIdiomas['es']=['saludo' => 'Bienvenido',
+                     'password' => 'Contraseña actual: ',
+                     'passwordNueva' => 'Nueva contraseña: ',
+                     'passwordRepetida' => 'Repita contraseña: ',
+                     'aceptar' => 'Aceptar',
+                     'cancelar' => 'Cancelar'];
+    
+    $aIdiomas['en']=['saludo' => 'Welcome',
+                     'password' => 'Current password: ',
+                     'passwordNueva' => 'New password: ',
+                     'passwordRepetida' => 'Repeat password: ',
+                     'aceptar' => 'Acept',
+                     'cancelar' => 'Cancel'];
     
     require_once '../core/libreriaValidacion.php';//Incluimos la librería de validación para comprobar los campos del formulario
     require_once "../config/confDBPDO.php";//Incluimos el archivo confDBPDO.php para poder acceder al valor de las constantes de los distintos valores de la conexión 
@@ -131,10 +129,10 @@
     <main class="mainEditar">
         <div class="contenido">
             <form name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
-                    <h3 style="text-align: center;"><?php echo $saludo; ?></h3>
+                    <h3 style="text-align: center;"><?php echo $aIdiomas[$_COOKIE['idioma']]['saludo']; ?></h3>
                 <br>
                 <div>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="PasswordActual"><?php echo $passwordIdioma; ?></label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="PasswordActual"><?php echo $aIdiomas[$_COOKIE['idioma']]['password']; ?></label>
                     <input type="password" style="background-color: #D2D2D2" id="PasswordActual" name="PasswordActual" value="<?php echo(isset($_REQUEST['PasswordActual']) ? $_REQUEST['PasswordActual'] : null); ?>">
                     <?php
                         if ($aErrores['PasswordActual'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -142,7 +140,7 @@
                         }
                     ?>
                     <br><br>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="PasswordNueva"><?php echo $passwordNuevaIdioma; ?></label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="PasswordNueva"><?php echo $aIdiomas[$_COOKIE['idioma']]['passwordNueva']; ?></label>
                     <input type="password" style="background-color: #D2D2D2" id="PasswordNueva" name="PasswordNueva" value="<?php echo(isset($_REQUEST['PasswordNueva']) ? $_REQUEST['PasswordNueva'] : null); ?>">
                     <?php
                         if ($aErrores['PasswordNueva'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -151,7 +149,7 @@
                     ?>
                     <br><br>
 
-                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="PasswordRepetida"><?php echo $passwordRepetidaIdioma; ?></label>
+                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="PasswordRepetida"><?php echo $aIdiomas[$_COOKIE['idioma']]['passwordRepetida']; ?></label>
                     <input type="password" style="background-color: #D2D2D2" id="PasswordRepetida" name="PasswordRepetida" value="<?php echo(isset($_REQUEST['PasswordRepetida']) ? $_REQUEST['PasswordRepetida'] : null);?>">
                     <?php
                         if ($aErrores['PasswordRepetida'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -161,8 +159,8 @@
                     <br><br>
                 </div>
                 <div>
-                    <input type="submit" value="<?php echo $aceptarIdioma; ?>" name="aceptar" class="aceptar">
-                    <input type="submit" style="background-color: #ff8787;" value="<?php echo $cancelarIdioma; ?>" name="cancelar" class="aceptar">
+                    <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['aceptar']; ?>" name="aceptar" class="aceptar">
+                    <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['cancelar']; ?>" name="cancelar" class="aceptar">
                 </div>
             </form>
         </div>
