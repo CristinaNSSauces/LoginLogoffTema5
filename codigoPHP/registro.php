@@ -8,24 +8,21 @@
         exit;
     }
     
-    if($_COOKIE['idioma']=='es'){
-        $saludo="Bienvenido";
-        $usuarioIdioma="Usuario: ";
-        $descripcionIdioma="Descripción: ";
-        $passwordIdioma="Contraseña: ";
-        $passwordRepetidaIdioma="Repita la contraseña: ";
-        $registrarseIdioma="Registrarme";
-        $cancelarIdioma="Cancelar";
-    }else{
-        $saludo="Welcome";
-        $usuarioIdioma="User: ";
-        $descripcionIdioma="Description: ";
-        $passwordIdioma="Password: ";
-        $passwordRepetidaIdioma="Repeat Password: ";
-        $registrarseIdioma="Register";
-        $cancelarIdioma="Cancel";
-    }
+    $aIdiomas['es']=['saludo' => 'Bienvenido',
+                     'usuario' => 'Usuario: ',
+                     'descripcion' => 'Descripción: ',
+                     'password' => 'Contraseña: ',
+                     'passwordRepetida' => 'Repita la contraseña: ',
+                     'registrarse' => 'Registrarme',
+                     'cancelar' => 'Cancelar'];
     
+    $aIdiomas['en']=['saludo' => 'Welcome',
+                     'usuario' => 'User: ',
+                     'descripcion' => 'Description: ',
+                     'password' => 'Password: ',
+                     'passwordRepetida' => 'Repeat Password: ',
+                     'registrarse' => 'Register',
+                     'cancelar' => 'Cancel'];
     
     require_once '../core/libreriaValidacion.php';//Incluimos la librería de validación para comprobar los campos del formulario
     require_once "../config/confDBPDO.php";//Incluimos el archivo confDBPDO.php para poder acceder al valor de las constantes de los distintos valores de la conexión 
@@ -138,10 +135,10 @@
     <main class="mainEditar">
         <div class="contenido">
             <form name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
-                    <h3 style="text-align: center;"><?php echo $saludo; ?></h3>
+                    <h3 style="text-align: center;"><?php echo $aIdiomas[$_COOKIE['idioma']]['saludo']; ?></h3>
                 <br>
                 <div>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario"><?php echo $usuarioIdioma; ?></label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario"><?php echo $aIdiomas[$_COOKIE['idioma']]['usuario']; ?></label>
                     <input type="text" style="background-color: #D2D2D2" name="CodUsuario" value="<?php echo(isset($_REQUEST['CodUsuario']) ? $_REQUEST['CodUsuario'] : null); ?>">
                     <?php
                         if ($aErrores['CodUsuario'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -149,7 +146,7 @@
                         }
                     ?>
                     <br><br>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="Descripcion"><?php echo $descripcionIdioma; ?></label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="Descripcion"><?php echo $aIdiomas[$_COOKIE['idioma']]['descripcion']; ?></label>
                     <input type="text" style="background-color: #D2D2D2" name="Descripcion" value="<?php echo(isset($_REQUEST['Descripcion']) ? $_REQUEST['Descripcion'] : null); ?>">
                     <?php
                         if ($aErrores['Descripcion'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -158,7 +155,7 @@
                     ?>
                     <br><br>
 
-                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password"><?php echo $passwordIdioma; ?></label>
+                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password"><?php echo $aIdiomas[$_COOKIE['idioma']]['password']; ?></label>
                     <input type="password" style="background-color: #D2D2D2" name="Password" value="<?php echo(isset($_REQUEST['Password']) ? $_REQUEST['Password'] : null);?>">
                     <?php
                         if ($aErrores['Password'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -166,7 +163,7 @@
                         }
                     ?>
                     <br><br>
-                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="PasswordRepetida"><?php echo $passwordRepetidaIdioma; ?></label>
+                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="PasswordRepetida"><?php echo $aIdiomas[$_COOKIE['idioma']]['passwordRepetida']; ?></label>
                     <input type="password" style="background-color: #D2D2D2" name="PasswordRepetida" value="<?php echo(isset($_REQUEST['PasswordRepetida']) ? $_REQUEST['PasswordRepetida'] : null);?>">
                     <?php
                         if ($aErrores['PasswordRepetida'] != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -176,8 +173,8 @@
                     <br><br>
                 </div>
                 <div>
-                    <input type="submit" value="<?php echo $registrarseIdioma; ?>" name="aceptar" class="aceptar">
-                    <input type="submit" style="background-color: #ff8787;" value="<?php echo $cancelarIdioma; ?>" name="cancelar" class="aceptar">
+                    <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['registrarse']; ?>" name="aceptar" class="aceptar">
+                    <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['cancelar']; ?>" name="cancelar" class="aceptar">
                 </div>
             </form>
         </div>

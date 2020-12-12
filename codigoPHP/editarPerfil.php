@@ -21,29 +21,31 @@
         exit;
     }
    
-    if($_COOKIE['idioma']=='es'){
-        $saludo="Bienvenido";
-        $usuarioIdioma="Usuario: ";
-        $descripcionIdioma="Descripción: ";
-        $fechaIdioma="Fecha Hora Última conexión: ";
-        $conexionesIdioma="Número de conexiones: ";
-        $passwordIdioma="Contraseña: ";
-        $cambiarPasswordIdioma="Cambiar Contraseña";
-        $cerrarSesionIdioma="Cerrar Sesión";
-        $aceptarIdioma="Aceptar";
-        $cancelarIdioma="Cancelar";
-    }else{
-        $saludo="Welcome";
-        $usuarioIdioma="User: ";
-        $descripcionIdioma="Description: ";
-        $fechaIdioma="Date Time Last connection: ";
-        $conexionesIdioma="Number of connections: ";
-        $passwordIdioma="Password: ";
-        $cambiarPasswordIdioma="Change Password";
-        $cerrarSesionIdioma="logoff";
-        $aceptarIdioma="Acept";
-        $cancelarIdioma="Cancel";
-    }
+    $aIdiomas['es']=['saludo' => 'Bienvenido',
+                     'usuario' => 'Usuario: ',
+                     'descripcion' => 'Descripción: ',
+                     'fecha' => 'Fecha Hora Última conexión: ',
+                     'conexiones' => 'Número de conexiones: ',
+                     'password' => 'Contraseña: ',
+                     'cambiarPassword' => 'Cambiar Contraseña',
+                     'cerrarSesion' => 'Cerrar Sesión',
+                     'imagen' => 'Imagen: ',
+                     'eliminarCuenta' => 'Eliminar Cuenta',
+                     'aceptar' => 'Aceptar',
+                     'cancelar' => 'Cancelar'];
+    
+    $aIdiomas['en']=['saludo' => 'Welcome',
+                     'usuario' => 'User: ',
+                     'descripcion' => 'Description: ',
+                     'fecha' => 'Date Time Last connection: ',
+                     'conexiones' => 'Number of connections: ',
+                     'password' => 'Password: ',
+                     'cambiarPassword' => 'Change Password',
+                     'cerrarSesion' => 'logoff',
+                     'imagen' => 'Image: ',
+                     'eliminarCuenta' => 'Delete Account',
+                     'aceptar' => 'Acept',
+                     'cancelar' => 'Cancel'];
     
     require_once '../core/libreriaValidacion.php';//Incluimos la librería de validación para comprobar los campos del formulario
     require_once "../config/confDBPDO.php";//Incluimos el archivo confDBPDO.php para poder acceder al valor de las constantes de los distintos valores de la conexión 
@@ -80,7 +82,32 @@
     //Declaramos el array de errores y lo inicializamos a null
     $errorDescripcion = "";
     $errorImagen = "";
+    
+    if(isset($_REQUEST['eliminarCuenta'])){
+        try{//validamos que la CodUsuario sea correcta
+            $miDB = new PDO(DNS,USER,PASSWORD);//Instanciamos un objeto PDO y establecemos la conexión
+            $miDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);//Configuramos las excepciones
 
+            $sql = "DELETE from T01_Usuario where T01_CodUsuario=:CodUsuario";
+            $consulta = $miDB->prepare($sql);//Preparamos la consulta
+            $parametros = [":CodUsuario" => $_SESSION['usuarioDAW215LoginLogoffTema5']];
+
+            $consulta->execute($parametros);//Ejecutamos la consulta
+            session_destroy();
+            header('Location: login.php');
+            exit;
+            
+        }catch(PDOException $excepcion){
+            $errorExcepcion = $excepcion->getCode();//Almacenamos el código del error de la excepción en la variable $errorExcepcion
+            $mensajeExcepcion = $excepcion->getMessage();//Almacenamos el mensaje de la excepción en la variable $mensajeExcepcion
+
+            echo "<span style='color: red;'>Error: </span>".$mensajeExcepcion."<br>";//Mostramos el mensaje de la excepción
+            echo "<span style='color: red;'>Código del error: </span>".$errorExcepcion;//Mostramos el código de la excepción
+        } finally {
+           unset($miDB); //cerramos la conexion con la base de datos
+        }
+    }
+    
     if(isset($_REQUEST['aceptar'])){ //Comprobamos que el usuario haya enviado el formulario
         $errorDescripcion = validacionFormularios::comprobarAlfaNumerico($_REQUEST['Descripcion'], 255, 3, OBLIGATORIO);
 
@@ -154,16 +181,16 @@
     </header>
     <main class="mainEditar">
         <div class="contenido">
-            <h3 style="text-align: center;"><?php echo $saludo; ?></h3>
+            <h3 style="text-align: center;"><?php echo $aIdiomas[$_COOKIE['idioma']]['saludo']; ?></h3>
             <form name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta" enctype="multipart/form-data">
                     
                 <div>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario"><?php echo $usuarioIdioma; ?></label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario"><?php echo $aIdiomas[$_COOKIE['idioma']]['usuario']; ?></label>
                     <input type="text" style="background-color: transparent; border: 0px;" id="CodUsuario" name="CodUsuario" value="<?php echo $_SESSION['usuarioDAW215LoginLogoffTema5']; ?>" readonly>
 
                     <br><br>
                     
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="Descripcion"><?php echo $descripcionIdioma; ?></label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="Descripcion"><?php echo $aIdiomas[$_COOKIE['idioma']]['descripcion']; ?></label>
                     <input type="text" style="background-color: #D2D2D2" id="Descripcion" name="Descripcion" value="<?php echo(isset($_REQUEST['Descripcion']) ? $_REQUEST['Descripcion'] : $descripcionUsuario); ?>">
                     <?php
                         if ($errorDescripcion != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -172,21 +199,21 @@
                     ?>
                     <br><br>
                     
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="NConexiones"><?php echo $conexionesIdioma; ?></label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="NConexiones"><?php echo $aIdiomas[$_COOKIE['idioma']]['conexiones']; ?></label>
                     <input type="text" style="background-color: transparent; border: 0px;" id="NConexiones" name="NConexiones" value="<?php echo $numConexiones; ?>" readonly>
 
                     <br><br>
                     <?php
                         if($numConexiones>1){
                     ?>
-                        <label style="font-weight: bold;" class="CodigoDepartamento" for="FechaHora"><?php echo $fechaIdioma; ?></label>
+                        <label style="font-weight: bold;" class="CodigoDepartamento" for="FechaHora"><?php echo $aIdiomas[$_COOKIE['idioma']]['fecha']; ?></label>
                         <input type="text" style="background-color: transparent; border: 0px;" id="FechaHora" name="FechaHora" value="<?php echo date('d/m/Y H:i:s',$_SESSION['FechaHoraUltimaConexionAnterior']);?>" readonly>
 
                         <br><br>
                     <?php
                         }
                     ?>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="imagen">Imagen: </label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="imagen"><?php echo $aIdiomas[$_COOKIE['idioma']]['imagen']; ?> </label>
                     <input type="file" id="imagen" name="imagen">
                     <?php
                         if ($errorImagen != null) { // Si hay algun mensaje de error almacenado en el array para este campo del formulario se lo mostramos al usuario por pantalla al lado del campo correspondiente
@@ -194,12 +221,14 @@
                         }
                     ?>
                     <br><br>
-                    <a href="cambiarPassword.php"><p style="color: blue;font-family: 'News Cycle', sans-serif; font-weight: bold; font-size: 17px;"><?php echo $cambiarPasswordIdioma; ?></p></a>
+                    <a href="cambiarPassword.php"><p style="color: blue;font-family: 'News Cycle', sans-serif; font-weight: bold; font-size: 17px;"><?php echo $aIdiomas[$_COOKIE['idioma']]['cambiarPassword']; ?></p></a>
                     <br>
+                    <input type="submit" style="background-color: #ff8787;" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['eliminarCuenta']; ?>" name="eliminarCuenta" class="aceptar">
+                    <br><br>
                 </div>
                 <div>
-                    <input type="submit" value="<?php echo $aceptarIdioma; ?>" name="aceptar" class="aceptar">
-                    <input type="submit" style="background-color: #ff8787;" value="<?php echo $cancelarIdioma; ?>" name="cancelar" class="aceptar">
+                    <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['aceptar']; ?>" name="aceptar" class="aceptar">
+                    <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['cancelar']; ?>" name="cancelar" class="aceptar">
                 </div>
             </form>
         </div>

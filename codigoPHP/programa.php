@@ -10,24 +10,24 @@
         exit;
     }
     
-    if($_COOKIE['idioma']=='es'){
-        $saludo="Hola";
-        $fechaIdioma="Fecha Hora Última conexión: ";
-        $primeraConexionIdioma="Es la primera vez que inicias sesión";
-        $conexionesIdioma="Número de conexiones: ";
-        $detallesIdioma="Detalles";
-        $editarPerfilIdioma="Editar perfil";
-        $cerrarSesionIdioma="Cerrar Sesión";
-    }else{
-        $saludo="Hello";
-        $fechaIdioma="Date Time Last connection: ";
-        $primeraConexionIdioma="It is the first time you log in";
-        $conexionesIdioma="Number of connections: ";
-        $detallesIdioma="Details";
-        $editarPerfilIdioma="Edit profile";
-        $cerrarSesionIdioma="logoff";
-    }
+    $aIdiomas['es']=['saludo' => 'Hola',
+                     'idiomaElegido' => 'Idioma: ',
+                     'fecha' => 'Fecha Hora Última conexión: ',
+                     'primeraConexion' => 'Es la primera vez que inicias sesión',
+                     'conexiones' => 'Número de conexiones: ',
+                     'detalles' => 'Detalles',
+                     'editarPerfil' => 'Editar perfil',
+                     'cerrarSesion' => 'Cerrar Sesión'];
     
+    $aIdiomas['en']=['saludo' => 'Hello',
+                     'idiomaElegido' => 'Language: ',
+                     'fecha' => 'Date Time Last connection: ',
+                     'primeraConexion' => 'It is the first time you log in',
+                     'conexiones' => 'Number of connections: ',
+                     'detalles' => 'Details',
+                     'editarPerfil' => 'Edit profile',
+                     'cerrarSesion' => 'logoff'];
+
     if(isset($_REQUEST['detalles'])){
         header('Location: detalles.php');
         exit;
@@ -90,46 +90,31 @@
                 echo '<img style="margin-rigth: 2px;" src = "data:image/png;base64,' . base64_encode($imagenUsuario) . '" width = "50px"/>';
             }
             ?>
-            <input type="submit" value="<?php echo $editarPerfilIdioma; ?>" name="editarPerfil" id="editarPerfil">
-            <input type="submit" value="<?php echo $cerrarSesionIdioma ?>" name="salir" id="cerrarSesion">
+            <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['editarPerfil']; ?>" name="editarPerfil" id="editarPerfil">
+            <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['cerrarSesion'] ?>" name="salir" id="cerrarSesion">
         </form>
     </header>
     <main class="mainEditar">
         <div class="contenido">
             <br><br>
-                    <h3><?php echo $saludo." ".$descUsuario; //Mostramos el saludo en el idioma correspondiente?></h3>
+                    <h3><?php echo $aIdiomas[$_COOKIE['idioma']]['saludo']." ".$descUsuario;//Mostramos el saludo en el idioma correspondiente?></h3>
                     <?php
                         if($nConexiones==1){//Si es la primera vez que inicia sesion
                             ?>
-                            <h3><?php echo $primeraConexionIdioma; ?></h3>
+                            <h3><?php echo $aIdiomas[$_COOKIE['idioma']]['primeraConexion']; ?></h3>
                     <?php
                         }else{//Si no es la prinera vez que inicias sesion
                             ?>
-                            <h3><?php echo $conexionesIdioma.$nConexiones ?></h3>
-                            <h3><?php echo $fechaIdioma.date('d/m/Y H:i:s',$_SESSION['FechaHoraUltimaConexionAnterior']);?> </h3>
+                            <h3><?php echo $aIdiomas[$_COOKIE['idioma']]['conexiones'].$nConexiones ?></h3>
+                            <h3><?php echo $aIdiomas[$_COOKIE['idioma']]['fecha'].date('d/m/Y H:i:s',$_SESSION['FechaHoraUltimaConexionAnterior']);?> </h3>
                     <?php
                             
                         }
-                    ?>                    
-        <?php
-                if($_COOKIE['idioma']=='es'){//Si el idioma almacenado en la cookie idioma es español
-            ?>  
-                    <h3>Idioma: <?php echo $_COOKIE['idioma']; //Mostramos el idioma seleccionado en español?></h3>
-            <?php
-                }
-                if($_COOKIE['idioma']=='en'){//Si el idioma almacenado en la cookie idioma es ingles
-            ?>   
-                    <h3>Language: <?php echo $_COOKIE['idioma']; //Mostramos el idioma seleccionado en ingles?></h3>
-            <?php
-                }
-                if($_COOKIE['idioma']=='fr'){//Si el idioma almacenado en la cookie idioma es francés
-            ?>   
-                    <h3>Langage: <?php echo $_COOKIE['idioma']; //Mostramos el idioma seleccionado en francés?></h3>
-            <?php
-                }
-        ?>
+                    ?> 
+                            
+                    <h3><?php echo $aIdiomas[$_COOKIE['idioma']]['idiomaElegido'].$_COOKIE['idioma']; //Mostramos el idioma seleccionado?></h3>
             <form class="formularioPrograma" name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post">
-                <input type="submit" value="<?php echo $detallesIdioma; ?>" name="detalles" class="aceptar">
+                <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['detalles']; ?>" name="detalles" class="aceptar">
             </form>
         </div>
     </main>

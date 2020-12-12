@@ -5,17 +5,13 @@
     */
     
     if(!isset($_COOKIE['idioma'])){
-        setcookie("idioma", 'es', time()+2592000);//Ponemos que el idioma sea español
+        setcookie("idioma", 'es', time()+2592000);//Ponemos que el idioma sea español;
         header('Location: login.php');
         exit;
     }
 
-    if(isset($_REQUEST['es'])){
-        setcookie("idioma", $_REQUEST['es'], time()+2592000);//Ponemos que el idioma sea español
-        header('Location: login.php');
-        exit;
-    }else if(isset($_REQUEST['en'])){
-        setcookie("idioma", $_REQUEST['en'], time()+2592000);//Ponemos que el idioma sea ingles
+    if(isset($_REQUEST['idiomaSeleccionado'])){
+        setcookie("idioma", $_REQUEST['idiomaSeleccionado'], time()+2592000);//Ponemos que el idioma sea español
         header('Location: login.php');
         exit;
     }
@@ -25,21 +21,19 @@
         exit;
     }
     
-    if($_COOKIE['idioma']=='es'){
-        $saludo="Bienvenido";
-        $usuarioIdioma="Usuario: ";
-        $passwordIdioma="Contraseña: ";
-        $registrarseIdioma="Registrarse";
-        $fraseRegistroIdioma="¿Aún no estás registrado?";
-        $iniciarSesionIdioma="Iniciar Sesión";
-    }else{
-        $saludo="Welcome";
-        $usuarioIdioma="User: ";
-        $passwordIdioma="Password: ";
-        $registrarseIdioma="Register";
-        $fraseRegistroIdioma="Not registered yet?";
-        $iniciarSesionIdioma="Log in";
-    }
+    $aIdiomas['es']=['saludo' => 'Bienvenido',
+                     'usuario' => 'Usuario: ',
+                     'password' => 'Contraseña: ',
+                     'registrarse' => 'Registrarse',
+                     'fraseRegistro' => '¿Aún no estás registrado?',
+                     'iniciarSesion' => 'Iniciar Sesión'];
+    
+    $aIdiomas['en']=['saludo' => 'Welcome',
+                     'usuario' => 'User: ',
+                     'password' => 'Password: ',
+                     'registrarse' => 'Register',
+                     'fraseRegistro' => 'Not registered yet?',
+                     'iniciarSesion' => 'Log in'];
     
     require_once '../core/libreriaValidacion.php';//Incluimos la librería de validación para comprobar los campos del formulario
     require_once "../config/confDBPDO.php";//Incluimos el archivo confDBPDO.php para poder acceder al valor de las constantes de los distintos valores de la conexión 
@@ -153,32 +147,32 @@
     <header>
         <div class="logo">Login Logoff Tema 5</div>
         <form name="formularioIdioma" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
-            <button type="submit" name="es" value="es" style="background-color: transparent; border: 0px;"><img src="../webroot/media/español.png" width="35px"></button>
-            <button type="submit" name="en" value="en" style="background-color: transparent; border: 0px;"><img src="../webroot/media/ingles.png" width="35px"></button>
+            <button type="submit" name="idiomaSeleccionado" value="es" style="background-color: transparent; border: 0px;"><img src="../webroot/media/español.png" width="35px"></button>
+            <button type="submit" name="idiomaSeleccionado" value="en" style="background-color: transparent; border: 0px;"><img src="../webroot/media/ingles.png" width="35px"></button>
         </form>
     </header>
     <main class="mainEditar">
         <div class="contenido">
             <form name="formulario" action="<?php echo $_SERVER['PHP_SELF'];?>" method="post" class="formularioAlta">
-                <h3 style="text-align: center;"><?php echo $saludo; ?></h3>
+                <h3 style="text-align: center;"><?php echo $aIdiomas[$_COOKIE['idioma']]['saludo'];?></h3>
                 <br>
                 <div>
-                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario"><?php echo $usuarioIdioma; ?></label>
+                    <label style="font-weight: bold;" class="CodigoDepartamento" for="CodUsuario"><?php echo $aIdiomas[$_COOKIE['idioma']]['usuario']; ?></label>
                     <input type="text" style="background-color: #D2D2D2" id="CodUsuario" name="CodUsuario" value="<?php echo(isset($_REQUEST['CodUsuario']) ? $_REQUEST['CodUsuario'] : null); ?>">
                    
                     <br><br>
 
-                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password"><?php echo $passwordIdioma; ?></label>
+                    <label style="font-weight: bold;" class="DescripcionDepartamento" for="Password"><?php echo $aIdiomas[$_COOKIE['idioma']]['password']; ?></label>
                     <input type="password" style="background-color: #D2D2D2" id="DescDepartamento" name="Password" value="<?php echo(isset($_REQUEST['Password']) ? $_REQUEST['Password'] : null);?>">
                     <br><br>
                 </div>
                 <div>
-                    <input type="submit" style="background-color: #f0dd7f;" value="<?php echo $iniciarSesionIdioma; ?>" name="aceptar" class="aceptar">
+                    <input type="submit" style="background-color: #f0dd7f;" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['iniciarSesion']; ?>" name="aceptar" class="aceptar">
                     <br>
                     <br>
-                    <h3 style="text-align: center;"><?php echo $fraseRegistroIdioma; ?></h3>
+                    <h3 style="text-align: center;"><?php echo $aIdiomas[$_COOKIE['idioma']]['fraseRegistro']; ?></h3>
                     <br>
-                    <input type="submit" value="<?php echo $registrarseIdioma; ?>" name="registrarse" class="aceptar">
+                    <input type="submit" value="<?php echo $aIdiomas[$_COOKIE['idioma']]['registrarse']; ?>" name="registrarse" class="aceptar">
                 </div>
             </form>
         </div>
